@@ -1,0 +1,103 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (Debug or Release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 2. Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 3. Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: 4. Prepare Debug Keystore
+        run: |
+          if [ -f "debug.keystore.base64" ] && [ ! -f "debug.keystore" ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+          elif [ ! -f "debug.keystore" ]; then
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: 5. Build APK
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" = "release" ] && [ -n "${{ secrets.STORE_PASSWORD }}" ]; then
+            echo "Building Release APK with Signing Config..."
+            ./gradlew assembleRelease --stacktrace
+            cp app/build/outputs/apk/release/*.apk NoorLink-Release.apk
+          else
+            echo "Building Universal Debug APK..."
+            ./gradlew assembleDebug --stacktrace
+            cp app/build/outputs/apk/debug/app-debug.apk NoorLink-v1.0.0.apk
+          fi
+
+      - name: 6. Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoorLink-Android-APK
+          path: |
+            NoorLink-*.apk
+            app/build/outputs/apk/*/*.apk
+          retention-days: 30
+
+      - name: 7. Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "NoorLink Release ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          body: |
+            ## 📱 NoorLink Android APK Release
+            
+            স্বয়ংক্রিয়ভাবে তৈরি হওয়া **NoorLink** অ্যান্ড্রয়েড এপিকে (APK) ডাউনলোড করার জন্য প্রস্তুত।
+            
+            ### 🚀 অন্তর্ভুক্ত ফিচারসমূহ:
+            - **Hello Service & Handshake**: রিয়েল-টাইম ডিভাইস রেজিস্ট্রি ও সক্ষমতা শেয়ারিং।
+            - **Auto-Discovery**: mDNS ও UDP ব্রডকাস্ট স্ক্যানার।
+            - **Heartbeat & Health Check**: Ping-Pong রাউন্ড-ট্রিপ (RTT) লেটেন্সি মনিটরিং।
+            - **Device Node Mode**: অ্যান্ড্রয়েড ফোনকে IoT এজ নোড হিসেবে ব্যবহারের সুবিধা।
+            - **Cloud Relay Integration**: ক্লাউড ও লোকাল কানেক্টিভিটি।
+            - **JWT Security Layer**: ক্রিপ্টোগ্রাফিক ডিজিটাল সিগনেচার যাচাইকরণ।
+            
+            ### 📥 ইন্সটলেশন নির্দেশিকা:
+            ১. নিচে দেওয়া `NoorLink-v1.0.0.apk` ফাইলটি আপনার অ্যান্ড্রয়েড ফোনে ডাউনলোড করুন।
+            ২. ফোনে ইনস্টল করতে "Install unknown apps" অনুমতি দিন।
+            ৩. অ্যাপ ওপেন করে সরাসরি ক্লাউড বা লোকাল নোড কানেক্ট করুন!
+          files: |
+            NoorLink-*.apk
+            app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,71 @@
+{
+  "id": "/?source=pwa",
+  "name": "NoorLink - Remote Connectivity & Hello Service",
+  "short_name": "NoorLink",
+  "description": "Real-time Hello Service, Auto-Discovery & Remote Device Controller for distributed systems and IoT nodes.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#090D16",
+  "theme_color": "#00F5D4",
+  "dir": "ltr",
+  "lang": "en",
+  "categories": ["utilities", "developer", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Dashboard",
+      "url": "/#dashboard",
+      "description": "View live connected nodes and heartbeat status"
+    },
+    {
+      "name": "Heartbeat Monitor",
+      "url": "/#heartbeat",
+      "description": "Inspect real-time ping-pong RTT latency"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-preview.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "NoorLink Command and Control Console"
+    },
+    {
+      "src": "/screenshots/mobile-preview.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Node Controller"
+    }
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,15 @@
+{
+  "name": "noorlink-core",
+  "version": "1.0.0",
+  "description": "NoorLink Core Relay, Hello Service & Handshake Protocol",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node server/test-server-handshake.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.18.0"
+  }
+}

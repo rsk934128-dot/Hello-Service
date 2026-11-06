@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>NoorLink - Hello Service & Remote Connectivity Console</title>
+    
+    <!-- PWA & PWABuilder Optimization Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00F5D4">
+    <meta name="background-color" content="#090D16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NoorLink">
+    <meta name="description" content="NoorLink: Real-time Hello Service, Auto-Discovery & Remote Device Controller for distributed systems and IoT nodes.">
+
+    <!-- Recharts, React & ReactDOM Libraries for Live Node Health Trend Visualizations -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #090D16;
+            --surface-dark: #111827;
+            --surface-variant: #1E293B;
+            --border-color: #334155;
+            --cyber-cyan: #00F5D4;
+            --neon-blue: #00B4D8;
+            --electric-indigo: #6366F1;
+            --signal-green: #10B981;
+            --signal-amber: #F59E0B;
+            --signal-red: #EF4444;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyber-cyan), var(--neon-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--bg-dark);
+        }
+
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--cyber-cyan);
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--signal-green);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--signal-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .btn {
+            background: var(--surface-variant);
+            color: var(--cyber-cyan);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: rgba(0, 245, 212, 0.15);
+            border-color: var(--cyber-cyan);
+        }
+
+        .btn-primary {
+            background: var(--cyber-cyan);
+            color: var(--bg-dark);
+            border: none;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            background: #60fee8;
+        }
+
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* KPI Stat Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .kpi-card {
+            background: var(--surface-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--cyber-cyan);
+        }
+
+        /* Relay Connection Bar */
+        .relay-bar {
+            background: var(--surface-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .input-text {
+            background: var(--surface-variant);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+            font-family: monospace;
+        }
+
+        .input-text:focus {
+            outline: none;
+            border-color: var(--cyber-cyan);
+        }
+
+        /* Content Layout */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--surface-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Device Cards List */
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .device-item {
+            background: var(--surface-variant);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .device-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .device-title {
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-caps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--neon-blue);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        /* Log Stream */
+        .log-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            height: 280px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .log-entry.incoming { color: var(--cyber-cyan); }
+        .log-entry.outgoing { color: var(--neon-blue); }
+        .log-entry.error { color: var(--signal-red); }
+
+        /* PWA Install Banner */
+        #pwa-install-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid var(--cyber-cyan);
+            border-radius: 12px;
+            padding: 14px 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="logo-circle">⚡</div>
+            <div class="brand-text">
+                <h1>NoorLink</h1>
+                <p id="tagline">Hello Service & Remote Connectivity Console</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="status-badge" id="relay-status">
+                <span class="status-dot"></span>
+                <span id="relay-status-text">Relay Active</span>
+            </div>
+            <button class="btn" id="lang-btn" onclick="toggleLanguage()">বাংলা</button>
+            <button class="btn btn-primary" id="install-btn" style="display: none;">Install PWA</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- PWA Install Prompt Banner -->
+        <div id="pwa-install-banner">
+            <div>
+                <strong>Install NoorLink PWA:</strong> Add this Command & Control dashboard to your desktop or mobile home screen via PWABuilder.
+            </div>
+            <button class="btn btn-primary" id="pwa-install-action">Install</button>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title" id="lbl-active-nodes">Active Verified Nodes</span>
+                <span class="kpi-value" id="kpi-nodes">4</span>
+                <span class="kpi-sub" id="lbl-nodes-sub">JWT Handshake Verified</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title" id="lbl-avg-latency">Heartbeat Latency (RTT)</span>
+                <span class="kpi-value" id="kpi-latency">18 ms</span>
+                <span class="kpi-sub" id="lbl-latency-sub">Continuous Ping-Pong</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title" id="lbl-handshakes">Total Handshakes</span>
+                <span class="kpi-value" id="kpi-handshakes">12</span>
+                <span class="kpi-sub" id="lbl-handshakes-sub">0 Rejected / 100% SLA</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title" id="lbl-relay-status">Core Relay State</span>
+                <span class="kpi-value" style="color: var(--signal-green);">ONLINE</span>
+                <span class="kpi-sub">WebSocket ws://:8080</span>
+            </div>
+        </div>
+
+        <!-- Relay Gateway Connection Controls -->
+        <div class="relay-bar">
+            <div class="input-group">
+                <input type="text" id="ws-url" class="input-text" value="wss://rubel-ai-assistant-coding-studio-563399721287.us-west1.run.app" placeholder="wss://...">
+                <button class="btn btn-primary" id="btn-connect" onclick="toggleWebSocket()">Connect WSS</button>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn" onclick="document.getElementById('ws-url').value = 'wss://rubel-ai-assistant-coding-studio-563399721287.us-west1.run.app'; toggleWebSocket();">Cloud Run</button>
+                <button class="btn" onclick="document.getElementById('ws-url').value = 'ws://localhost:8088'; toggleWebSocket();">Local:8088</button>
+                <button class="btn" onclick="broadcastPing()">Broadcast Ping</button>
+                <button class="btn" onclick="simulateNewDevice()">+ Simulate Node</button>
+                <a href="https://rubel-ai-assistant-coding-studio-563399721287.us-west1.run.app/" target="_blank" rel="noopener noreferrer" class="btn" style="text-decoration: none; border-color: var(--cyber-cyan);">Rubel AI Studio ↗</a>
+            </div>
+        </div>
+
+        <!-- New Section: Node Health Trends & Connection Stability (Recharts Line Chart) -->
+        <div class="panel-card" style="width: 100%;">
+            <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h2 id="lbl-health-trends" style="display: flex; align-items: center; gap: 8px;">
+                        <span>📈 Node Health Trends &amp; Connection Stability</span>
+                        <span class="chip" style="background: rgba(0, 245, 212, 0.15); color: var(--cyber-cyan); border-color: rgba(0, 245, 212, 0.4);">Recharts Line Chart</span>
+                    </h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;" id="lbl-health-sub">
+                        Real-time round-trip latency (RTT) &amp; packet stability history per individual edge node.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Toggle Nodes:</span>
+                    <button class="btn" id="filter-sensor01" style="padding: 4px 10px; font-size: 0.75rem; border-color: #10B981; color: #10B981;" onclick="toggleNodeFilter('SENSOR_01')">✓ SENSOR_01</button>
+                    <button class="btn" id="filter-cam02" style="padding: 4px 10px; font-size: 0.75rem; border-color: #00F5D4; color: #00F5D4;" onclick="toggleNodeFilter('CAM_GATE_02')">✓ CAM_GATE_02</button>
+                    <button class="btn" id="filter-valve03" style="padding: 4px 10px; font-size: 0.75rem; border-color: #A855F7; color: #A855F7;" onclick="toggleNodeFilter('VALVE_ACTUATOR_03')">✓ VALVE_03</button>
+                    <button class="btn" id="filter-nodeandroid" style="padding: 4px 10px; font-size: 0.75rem; border-color: #00B4D8; color: #00B4D8;" onclick="toggleNodeFilter('ANDROID_NODE')">✓ ANDROID_NODE</button>
+                </div>
+            </div>
+
+            <!-- Health Summary Metric Badges -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 4px;">
+                <div style="background: var(--surface-variant); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Fleet Connection Health</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--signal-green); display: flex; align-items: center; gap: 6px;">
+                        <span>● Stable &amp; Active</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">(0% Packet Drops)</span>
+                    </div>
+                </div>
+                <div style="background: var(--surface-variant); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Avg Node Response Time</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--cyber-cyan); font-family: monospace;" id="chart-avg-val">18.4 ms</div>
+                </div>
+                <div style="background: var(--surface-variant); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Connection SLA Uptime</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--neon-blue); font-family: monospace;">99.98% Available</div>
+                </div>
+                <div style="background: var(--surface-variant); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Heartbeat Sampling</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--electric-indigo); font-family: monospace;">Live Pulse (5s interval)</div>
+                </div>
+            </div>
+
+            <!-- Recharts Line Chart Container -->
+            <div id="recharts-health-trend-root" style="width: 100%; min-height: 320px; margin-top: 8px; background: rgba(9, 13, 22, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                <div style="display: flex; align-items: center; justify-content: center; height: 300px; color: var(--text-secondary); font-family: monospace;">
+                    Initializing Recharts Stability Line Chart...
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="content-layout">
+            <!-- Active Connected Devices List -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h2 id="lbl-registered-devices">Registered Nodes & Capabilities</h2>
+                    <span class="chip" id="lbl-active-count">4 Active</span>
+                </div>
+
+                <div class="device-list" id="device-container">
+                    <!-- SENSOR_01 -->
+                    <div class="device-item">
+                        <div class="device-top">
+                            <div class="device-title">
+                                <span style="color: var(--signal-green);">●</span>
+                                <span>SENSOR_01</span>
+                                <span class="chip" style="color: var(--cyber-cyan);">ESP32</span>
+                            </div>
+                            <span style="font-family: monospace; font-size: 0.85rem; color: var(--cyber-cyan);">14 ms</span>
+                        </div>
+                        <div class="badge-caps">
+                            <span class="chip">temperature</span>
+                            <span class="chip">humidity</span>
+                            <span class="chip">telemetry</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                            <span>IP: 192.168.1.101 | Battery: 94%</span>
+                            <span>Temp: 26.4°C | Hum: 61%</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" style="flex: 1;" onclick="sendPing('SENSOR_01')">Ping</button>
+                            <button class="btn btn-primary" style="flex: 1;" onclick="dispatchCommand('SENSOR_01', 'FETCH_TELEMETRY')">Fetch Telemetry</button>
+                        </div>
+                    </div>
+
+                    <!-- CAM_GATE_02 -->
+                    <div class="device-item">
+                        <div class="device-top">
+                            <div class="device-title">
+                                <span style="color: var(--signal-green);">●</span>
+                                <span>CAM_GATE_02</span>
+                                <span class="chip" style="color: var(--neon-blue);">ARM Linux</span>
+                            </div>
+                            <span style="font-family: monospace; font-size: 0.85rem; color: var(--cyber-cyan);">28 ms</span>
+                        </div>
+                        <div class="badge-caps">
+                            <span class="chip">camera</span>
+                            <span class="chip">video_stream</span>
+                            <span class="chip">1080p</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                            <span>IP: 192.168.1.102 | Stream: 30 FPS</span>
+                            <span>Bitrate: 2.4 Mbps</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" style="flex: 1;" onclick="sendPing('CAM_GATE_02')">Ping</button>
+                            <button class="btn btn-primary" style="flex: 1;" onclick="dispatchCommand('CAM_GATE_02', 'CAPTURE_FRAME')">Snapshot</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Event Packet Console -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h2 id="lbl-live-stream">Live Packet Stream</h2>
+                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="clearLogs()">Clear</button>
+                </div>
+                <div class="log-box" id="log-box">
+                    <div class="log-entry incoming">[SYSTEM] NoorLink Service Worker & PWABuilder shell active.</div>
+                    <div class="log-entry outgoing">[HANDSHAKE] SENSOR_01 registered successfully with JWT.</div>
+                    <div class="log-entry incoming">[PING-PONG] SENSOR_01 RTT: 14ms (seq: 17308710)</div>
+                    <div class="log-entry outgoing">[HANDSHAKE] CAM_GATE_02 registered successfully with JWT.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. PWABuilder Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('[PWA] Service Worker registered:', reg.scope))
+                    .catch((err) => console.error('[PWA] Registration failed:', err));
+            });
+        }
+
+        // 2. PWABuilder Install Prompt Handler
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+        const installBanner = document.getElementById('pwa-install-banner');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'inline-flex';
+            installBanner.style.display = 'flex';
+        });
+
+        document.getElementById('pwa-install-action').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    installBanner.style.display = 'none';
+                });
+            }
+        });
+
+        // 3. Bilingual Toggle (English & Bengali)
+        let isBengali = false;
+        function toggleLanguage() {
+            isBengali = !isBengali;
+            document.getElementById('lang-btn').innerText = isBengali ? 'English' : 'বাংলা';
+            document.getElementById('tagline').innerText = isBengali ? 'হ্যালো সার্ভিস ও রিমোট কানেক্টিভিটি ইকোসিস্টেম' : 'Hello Service & Remote Connectivity Console';
+            document.getElementById('lbl-active-nodes').innerText = isBengali ? 'সক্রিয় ডিভাইসসমূহ' : 'Active Verified Nodes';
+            document.getElementById('lbl-avg-latency').innerText = isBengali ? 'হার্টবিট লেটেন্সি (RTT)' : 'Heartbeat Latency (RTT)';
+            document.getElementById('lbl-handshakes').innerText = isBengali ? 'মোট হ্যান্ডশেক' : 'Total Handshakes';
+            document.getElementById('lbl-registered-devices').innerText = isBengali ? 'রেজিস্টার্ড নোড ও সক্ষমতা' : 'Registered Nodes & Capabilities';
+            document.getElementById('lbl-live-stream').innerText = isBengali ? 'লাইভ প্যাকেট স্ট্রিম' : 'Live Packet Stream';
+        }
+
+        // 4. WebSocket Client & Protocol Handshake Simulator
+        let ws = null;
+        const savedUrl = localStorage.getItem('noorlink_ws_url');
+        if (savedUrl) {
+            document.getElementById('ws-url').value = savedUrl;
+        }
+
+        function toggleWebSocket() {
+            const url = document.getElementById('ws-url').value;
+            localStorage.setItem('noorlink_ws_url', url);
+            const btn = document.getElementById('btn-connect');
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+                btn.innerText = 'Connect WSS';
+                logEvent('Disconnected from ' + url, 'error');
+            } else {
+                try {
+                    ws = new WebSocket(url);
+                    btn.innerText = 'Connecting...';
+                    ws.onopen = () => {
+                        btn.innerText = 'Disconnect';
+                        logEvent('Connected to NoorLink Relay: ' + url, 'incoming');
+                    };
+                    ws.onmessage = (e) => {
+                        logEvent('RECV: ' + e.data, 'incoming');
+                    };
+                    ws.onerror = (err) => {
+                        logEvent('Connection Error: ' + err, 'error');
+                        btn.innerText = 'Connect WSS';
+                    };
+                    ws.onclose = () => {
+                        btn.innerText = 'Connect WSS';
+                    };
+                } catch(e) {
+                    logEvent('Socket Error: ' + e.message, 'error');
+                }
+            }
+        }
+
+        function broadcastPing() {
+            logEvent('[OUTGOING] Broadcast Ping dispatched to all nodes', 'outgoing');
+            const latency = Math.floor(12 + Math.random() * 15);
+            setTimeout(() => {
+                logEvent('[PONG] SENSOR_01 RTT: ' + latency + 'ms', 'incoming');
+                document.getElementById('kpi-latency').innerText = latency + ' ms';
+            }, latency);
+        }
+
+        function sendPing(deviceId) {
+            logEvent('[PING] Pinging node: ' + deviceId, 'outgoing');
+            const delay = Math.floor(10 + Math.random() * 20);
+            setTimeout(() => {
+                logEvent('[PONG] from ' + deviceId + ' latency=' + delay + 'ms', 'incoming');
+            }, delay);
+        }
+
+        function dispatchCommand(deviceId, action) {
+            logEvent('[COMMAND] ' + action + ' ➔ ' + deviceId, 'outgoing');
+            setTimeout(() => {
+                logEvent('[COMMAND_ACK] ' + deviceId + ' executed ' + action, 'incoming');
+            }, 60);
+        }
+
+        function simulateNewDevice() {
+            const id = 'SENSOR_NODE_' + Math.floor(Math.random() * 90 + 10);
+            logEvent('[HELLO] Incoming handshake from ' + id + ' [JWT Verified]', 'incoming');
+            const handshakes = parseInt(document.getElementById('kpi-handshakes').innerText) + 1;
+            document.getElementById('kpi-handshakes').innerText = handshakes;
+        }
+
+        function logEvent(msg, type = '') {
+            const box = document.getElementById('log-box');
+            const div = document.createElement('div');
+            div.className = 'log-entry ' + type;
+            const time = new Date().toTimeString().split(' ')[0];
+            div.innerText = '[' + time + '] ' + msg;
+            box.insertBefore(div, box.firstChild);
+        }
+
+        function clearLogs() {
+            document.getElementById('log-box').innerHTML = '';
+        }
+
+        // 5. Node Health Trends & Connection Stability Line Chart (Recharts)
+        const visibleNodes = {
+            SENSOR_01: true,
+            CAM_GATE_02: true,
+            VALVE_ACTUATOR_03: true,
+            ANDROID_NODE: true
+        };
+
+        const initialHealthData = [
+            { time: '12:00', SENSOR_01: 14, CAM_GATE_02: 26, VALVE_ACTUATOR_03: 20, ANDROID_NODE: 10 },
+            { time: '12:02', SENSOR_01: 16, CAM_GATE_02: 30, VALVE_ACTUATOR_03: 22, ANDROID_NODE: 12 },
+            { time: '12:04', SENSOR_01: 13, CAM_GATE_02: 27, VALVE_ACTUATOR_03: 19, ANDROID_NODE: 9 },
+            { time: '12:06', SENSOR_01: 15, CAM_GATE_02: 29, VALVE_ACTUATOR_03: 24, ANDROID_NODE: 11 },
+            { time: '12:08', SENSOR_01: 14, CAM_GATE_02: 25, VALVE_ACTUATOR_03: 21, ANDROID_NODE: 8 },
+            { time: '12:10', SENSOR_01: 17, CAM_GATE_02: 32, VALVE_ACTUATOR_03: 23, ANDROID_NODE: 14 },
+            { time: '12:12', SENSOR_01: 14, CAM_GATE_02: 28, VALVE_ACTUATOR_03: 20, ANDROID_NODE: 9 }
+        ];
+
+        let currentHealthData = [...initialHealthData];
+
+        function toggleNodeFilter(nodeKey) {
+            visibleNodes[nodeKey] = !visibleNodes[nodeKey];
+            const btnId = {
+                SENSOR_01: 'filter-sensor01',
+                CAM_GATE_02: 'filter-cam02',
+                VALVE_ACTUATOR_03: 'filter-valve03',
+                ANDROID_NODE: 'filter-nodeandroid'
+            }[nodeKey];
+
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                const label = nodeKey.replace('_ACTUATOR', '').replace('_GATE', '');
+                btn.innerText = (visibleNodes[nodeKey] ? '✓ ' : '✗ ') + label;
+                btn.style.opacity = visibleNodes[nodeKey] ? '1' : '0.4';
+            }
+            renderHealthChart();
+        }
+
+        function renderHealthChart() {
+            const container = document.getElementById('recharts-health-trend-root');
+            if (!container) return;
+
+            // Check if React, ReactDOM, and Recharts are available
+            if (window.React && window.ReactDOM && window.Recharts) {
+                try {
+                    const e = React.createElement;
+                    const {
+                        ResponsiveContainer,
+                        LineChart,
+                        Line,
+                        XAxis,
+                        YAxis,
+                        CartesianGrid,
+                        Tooltip,
+                        Legend
+                    } = window.Recharts;
+
+                    const lines = [];
+                    if (visibleNodes.SENSOR_01) {
+                        lines.push(e(Line, {
+                            key: 'SENSOR_01',
+                            type: 'monotone',
+                            dataKey: 'SENSOR_01',
+                            name: 'SENSOR_01 (ESP32)',
+                            stroke: '#10B981',
+                            strokeWidth: 2.5,
+                            dot: { r: 3, fill: '#10B981' },
+                            activeDot: { r: 6 }
+                        }));
+                    }
+                    if (visibleNodes.CAM_GATE_02) {
+                        lines.push(e(Line, {
+                            key: 'CAM_GATE_02',
+                            type: 'monotone',
+                            dataKey: 'CAM_GATE_02',
+                            name: 'CAM_GATE_02 (ARM Linux)',
+                            stroke: '#00F5D4',
+                            strokeWidth: 2.5,
+                            dot: { r: 3, fill: '#00F5D4' },
+                            activeDot: { r: 6 }
+                        }));
+                    }
+                    if (visibleNodes.VALVE_ACTUATOR_03) {
+                        lines.push(e(Line, {
+                            key: 'VALVE_ACTUATOR_03',
+                            type: 'monotone',
+                            dataKey: 'VALVE_ACTUATOR_03',
+                            name: 'VALVE_03 (Zephyr RTOS)',
+                            stroke: '#A855F7',
+                            strokeWidth: 2.5,
+                            dot: { r: 3, fill: '#A855F7' },
+                            activeDot: { r: 6 }
+                        }));
+                    }
+                    if (visibleNodes.ANDROID_NODE) {
+                        lines.push(e(Line, {
+                            key: 'ANDROID_NODE',
+                            type: 'monotone',
+                            dataKey: 'ANDROID_NODE',
+                            name: 'ANDROID_NODE (Local Device)',
+                            stroke: '#00B4D8',
+                            strokeWidth: 2.5,
+                            dot: { r: 3, fill: '#00B4D8' },
+                            activeDot: { r: 6 }
+                        }));
+                    }
+
+                    const chartElement = e(ResponsiveContainer, { width: '100%', height: 300 },
+                        e(LineChart, { data: currentHealthData, margin: { top: 10, right: 25, left: -10, bottom: 0 } },
+                            e(CartesianGrid, { strokeDasharray: '3 3', stroke: '#334155', opacity: 0.5 }),
+                            e(XAxis, { dataKey: 'time', stroke: '#94A3B8', fontSize: 11, tickLine: false }),
+                            e(YAxis, { stroke: '#94A3B8', fontSize: 11, unit: 'ms', tickLine: false, domain: [0, 'auto'] }),
+                            e(Tooltip, {
+                                contentStyle: {
+                                    backgroundColor: '#111827',
+                                    border: '1px solid #334155',
+                                    borderRadius: '8px',
+                                    fontFamily: 'monospace',
+                                    fontSize: '12px'
+                                },
+                                itemStyle: { color: '#F8FAFC' }
+                            }),
+                            e(Legend, {
+                                wrapperStyle: {
+                                    fontSize: '12px',
+                                    paddingTop: '8px'
+                                }
+                            }),
+                            ...lines
+                        )
+                    );
+
+                    if (!window._rechartsRoot) {
+                        window._rechartsRoot = ReactDOM.createRoot(container);
+                    }
+                    window._rechartsRoot.render(chartElement);
+                    return;
+                } catch (err) {
+                    console.warn('Recharts rendering error, falling back:', err);
+                }
+            }
+
+            // Fallback SVG Visualizer if Recharts script is still loading or offline
+            renderSvgFallback(container);
+        }
+
+        function renderSvgFallback(container) {
+            const w = container.clientWidth || 800;
+            const h = 280;
+            const padding = { top: 20, right: 30, bottom: 30, left: 40 };
+            const innerW = w - padding.left - padding.right;
+            const innerH = h - padding.top - padding.bottom;
+
+            const maxVal = 40;
+            const points = currentHealthData.length;
+            const stepX = innerW / (points - 1);
+
+            const colors = {
+                SENSOR_01: '#10B981',
+                CAM_GATE_02: '#00F5D4',
+                VALVE_ACTUATOR_03: '#A855F7',
+                ANDROID_NODE: '#00B4D8'
+            };
+
+            let pathsHtml = '';
+            let dotsHtml = '';
+
+            Object.keys(colors).forEach((key) => {
+                if (!visibleNodes[key]) return;
+                const strokeColor = colors[key];
+                let d = '';
+                currentHealthData.forEach((item, idx) => {
+                    const val = item[key] || 15;
+                    const x = padding.left + idx * stepX;
+                    const y = padding.top + innerH - (val / maxVal) * innerH;
+                    d += (idx === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+                    dotsHtml += `<circle cx="${x}" cy="${y}" r="3.5" fill="${strokeColor}" stroke="#111827" stroke-width="1.5"/>`;
+                });
+                pathsHtml += `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round"/>`;
+            });
+
+            // Grid lines
+            let gridHtml = '';
+            for (let v = 10; v <= maxVal; v += 10) {
+                const y = padding.top + innerH - (v / maxVal) * innerH;
+                gridHtml += `<line x1="${padding.left}" y1="${y}" x2="${w - padding.right}" y2="${y}" stroke="#334155" stroke-dasharray="3,3" opacity="0.6"/>`;
+                gridHtml += `<text x="${padding.left - 8}" y="${y + 4}" fill="#94A3B8" font-size="10" text-anchor="end" font-family="monospace">${v}ms</text>`;
+            }
+
+            container.innerHTML = `
+                <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}">
+                    ${gridHtml}
+                    ${pathsHtml}
+                    ${dotsHtml}
+                </svg>
+                <div style="display: flex; gap: 16px; justify-content: center; font-size: 11px; margin-top: 6px; font-family: monospace;">
+                    <span style="color: #10B981;">● SENSOR_01 (ESP32)</span>
+                    <span style="color: #00F5D4;">● CAM_GATE_02 (ARM Linux)</span>
+                    <span style="color: #A855F7;">● VALVE_03 (Zephyr RTOS)</span>
+                    <span style="color: #00B4D8;">● ANDROID_NODE (Local)</span>
+                </div>
+            `;
+        }
+
+        // Live health simulation updater: appends new latency reading every 5 seconds
+        setInterval(() => {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+
+            const s1 = Math.floor(13 + Math.random() * 5);
+            const cam = Math.floor(25 + Math.random() * 8);
+            const valve = Math.floor(19 + Math.random() * 6);
+            const node = Math.floor(8 + Math.random() * 7);
+
+            currentHealthData.push({
+                time: timeStr,
+                SENSOR_01: s1,
+                CAM_GATE_02: cam,
+                VALVE_ACTUATOR_03: valve,
+                ANDROID_NODE: node
+            });
+
+            if (currentHealthData.length > 10) {
+                currentHealthData.shift();
+            }
+
+            const avg = ((s1 + cam + valve + node) / 4).toFixed(1);
+            const avgElem = document.getElementById('chart-avg-val');
+            if (avgElem) avgElem.innerText = avg + ' ms';
+
+            renderHealthChart();
+        }, 5000);
+
+        // Initial Chart Render when DOM is loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(renderHealthChart, 300);
+        });
+        setTimeout(renderHealthChart, 800);
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">NoorLink</string>
+    <string name="tagline">Hello Service &amp; Remote Connectivity Ecosystem</string>
+    <string name="tagline_bn">রিমোট কানেক্টিভিটি ও হ্যান্ডশেক ইকোসিস্টেম</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_discovery">Auto-Discovery</string>
+    <string name="nav_device_mode">Device Node</string>
+    <string name="nav_heartbeat">Heartbeat</string>
+    <string name="nav_console">Console &amp; Auth</string>
+    
+    <!-- Dashboard / Relay -->
+    <string name="relay_status_connected">Connected</string>
+    <string name="relay_status_connecting">Connecting…</string>
+    <string name="relay_status_disconnected">Disconnected</string>
+    <string name="active_devices">Active Devices</string>
+    <string name="latency_avg">Avg Latency</string>
+    <string name="handshakes_total">Handshakes</string>
+    <string name="quick_connect">Relay Gateway</string>
+    <string name="send_hello">Send Hello Handshake</string>
+    <string name="ping_all">Broadcast Ping</string>
+    
+    <!-- Actions -->
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="simulate_device">Add Simulated Device</string>
+    <string name="clear_logs">Clear Logs</string>
+    
+    <!-- Content descriptions -->
+    <string name="cd_device_icon">Device Status Icon</string>
+    <string name="cd_send_command">Send Command</string>
+    <string name="cd_refresh">Refresh Devices</string>
+    <string name="cd_copy">Copy to Clipboard</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "name": "NoorLink",
+  "description": "Real-time Hello Service, Auto-Discovery & Remote Device Controller for distributed systems and IoT nodes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
